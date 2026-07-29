@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="天使數字">
+<meta name="theme-color" content="#f8f4ed">
+<title>天使數字</title>
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f8f4ed; --paper2:#fdfbf7; --press:#efe9df;
+  --ink:#26231e; --ink2:#4f4941; --ink3:#8e8474; --ph:#cdc4b5;
+  --red:#9e2b1e; --redDark:#7f2118; --redCard:#9e2b1e;
+  --gold:#a8842c; --line:#ddd5c6;
+  --onred:#fff8ee; --onred2:#fdf6ea; --onredMuted:#f0c9a8;
+  --serif:"Noto Serif TC",Songti TC,PingFang TC,serif;
+  --sans:"Noto Sans TC",PingFang TC,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:16px;line-height:1.75;
+  -webkit-text-size-adjust:100%;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  overscroll-behavior-y:none;
+}
+.wrap{max-width:520px;margin:0 auto;padding:18px 16px 28px;}
+
+/* ── 標題 ── */
+header{text-align:center;padding:6px 0 14px;}
+header h1{
+  font-family:var(--serif);font-weight:700;
+  font-size:26px;letter-spacing:.22em;margin:0;color:var(--red);
+  text-indent:.22em;
+}
+header .sub{font-size:12px;color:var(--ink3);letter-spacing:.18em;margin-top:4px;text-indent:.18em;}
+.rule{height:1px;background:var(--line);margin:14px 0 18px;}
+
+/* ── 輸入顯示 ── */
+.screen{
+  background:var(--paper2);border:1px solid var(--line);border-radius:14px;
+  padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  box-shadow:0 1px 0 rgba(0,0,0,.03);
+}
+.screen .val{
+  font-family:var(--serif);font-weight:700;font-size:40px;line-height:1.1;
+  letter-spacing:.12em;color:var(--ink);min-height:44px;
+}
+.screen .val.ph{color:var(--ph);font-size:26px;letter-spacing:.1em;}
+.screen .hint{font-size:11px;color:var(--ink3);text-align:right;line-height:1.5;flex-shrink:0;}
+
+/* ── 數字盤 ── */
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;}
+.key{
+  appearance:none;border:1px solid var(--line);background:var(--paper2);
+  color:var(--ink);font-family:var(--serif);font-weight:700;font-size:28px;
+  padding:16px 0;border-radius:14px;cursor:pointer;
+  transition:transform .06s ease,background .12s ease;
+  user-select:none;touch-action:manipulation;
+}
+.key:active{transform:scale(.95);background:var(--press);}
+.key.fn{font-family:var(--sans);font-size:16px;font-weight:500;color:var(--ink2);}
+.key.go{background:var(--red);border-color:var(--red);color:var(--onred);font-family:var(--sans);font-size:17px;font-weight:700;letter-spacing:.1em;}
+.key.go:active{background:var(--redDark);}
+.key[disabled]{opacity:.35;}
+
+.tools{display:flex;gap:8px;margin-top:10px;}
+.tools button{
+  flex:1;appearance:none;background:transparent;border:1px dashed var(--line);
+  color:var(--ink3);font-family:var(--sans);font-size:13px;padding:9px 0;border-radius:10px;
+  cursor:pointer;touch-action:manipulation;
+}
+.tools button:active{background:var(--press);}
+
+/* ── 歷史 ── */
+.hist{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
+.hist .chip{
+  font-family:var(--serif);font-weight:500;font-size:14px;letter-spacing:.06em;
+  border:1px solid var(--line);background:var(--paper2);color:var(--ink2);
+  padding:4px 11px;border-radius:999px;cursor:pointer;touch-action:manipulation;
+}
+.hist .chip:active{background:var(--press);}
+
+/* ── 結果 ── */
+#result{margin-top:22px;}
+#result:empty{display:none;}
+.card{
+  background:var(--paper2);border:1px solid var(--line);border-radius:16px;
+  padding:20px 18px;margin-bottom:14px;
+}
+.bignum{
+  font-family:var(--serif);font-weight:700;font-size:54px;line-height:1;
+  color:var(--red);letter-spacing:.1em;text-indent:.1em;text-align:center;
+}
+.title{
+  font-family:var(--serif);font-weight:700;font-size:20px;text-align:center;
+  margin-top:10px;letter-spacing:.06em;
+}
+.kw{
+  text-align:center;font-size:12px;color:var(--gold);letter-spacing:.2em;
+  margin-top:6px;text-indent:.2em;
+}
+.core{
+  margin-top:16px;padding-top:14px;border-top:1px solid var(--line);
+  font-size:16.5px;color:var(--ink);line-height:1.85;
+}
+.core strong{color:var(--red);font-weight:700;}
+
+.sec-h{
+  font-family:var(--serif);font-weight:700;font-size:13px;color:var(--red);
+  letter-spacing:.2em;text-indent:.2em;margin:0 0 10px;
+  display:flex;align-items:center;gap:10px;
+}
+.sec-h::after{content:"";flex:1;height:1px;background:var(--line);}
+
+.act{list-style:none;padding:0;margin:0;}
+.act li{
+  display:flex;gap:11px;align-items:flex-start;
+  padding:11px 0;border-bottom:1px dotted var(--line);
+}
+.act li:last-child{border-bottom:none;padding-bottom:0;}
+.act .tag{
+  flex-shrink:0;font-family:var(--serif);font-weight:700;font-size:12px;
+  color:var(--onred);background:var(--gold);border-radius:6px;
+  padding:3px 7px;margin-top:4px;letter-spacing:.08em;
+}
+.act .tx{font-size:15.5px;color:var(--ink2);line-height:1.8;}
+
+.struct{font-size:14.5px;color:var(--ink2);line-height:1.85;}
+.struct p{margin:0 0 9px;}
+.struct p:last-child{margin-bottom:0;}
+.struct b{color:var(--ink);font-weight:700;}
+.chain{
+  font-family:var(--serif);font-weight:700;font-size:15px;color:var(--red);
+  letter-spacing:.06em;
+}
+
+.today{
+  background:var(--redCard);color:var(--onred2);border-radius:16px;padding:18px;
+}
+.today .sec-h{color:var(--onredMuted);}
+.today .sec-h::after{background:rgba(255,255,255,.25);}
+.today .tx{font-size:16.5px;line-height:1.85;color:var(--onred2);}
+
+footer{text-align:center;font-size:11.5px;color:var(--ink3);line-height:1.9;margin-top:24px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>天使數字</h1>
+  <div class="sub">ANGEL NUMBERS · 000-999</div>
+</header>
+
+<div class="screen">
+  <div class="val ph" id="val">輸入數字</div>
+  <div class="hint">最多 4 位<br>滿 3 位自動查詢</div>
+</div>
+
+<div class="pad" id="pad"></div>
+
+<div class="tools">
+  <button id="btnRand">隨機一組</button>
+  <button id="btnToday">今日數字</button>
+</div>
+
+<div class="hist" id="hist"></div>
+
+<div id="result"></div>
+
+<footer>
+  天使數字為靈性象徵解讀,非預測或醫療／財務建議。<br>
+  請當作一個停下來想一想的提示。
+</footer>
+
+</div>
+
+<script>
+/* ═══════════ 資料層 ═══════════ */
+
+const D = {
+ 0:{k:"歸零・無限・原點",
+    one:"一個循環正在關閉,也正在重開。選擇權在你手上,不在別人。",
+    love:"別急著替這段關係下定義,先確認自己還要不要。",
+    work:"停掉一件已經沒有產出的事,空出來的位置比新機會重要。",
+    money:"重新盤點收支結構——不是省錢,是重排順序。",
+    verb:"歸零"},
+ 1:{k:"開始・自我・主動",
+    one:"你最近反覆想的那件事,正在變成現實的起點。",
+    love:"主動說出你要什麼,不要等對方猜。",
+    work:"該提案就提案、該開口就開口,時機站在你這邊。",
+    money:"適合開新項目、新帳戶;不適合追已經漲上去的東西。",
+    verb:"開始"},
+ 2:{k:"平衡・關係・耐心",
+    one:"事情還在走,只是走在你看不到的地方。急不得。",
+    love:"少講一句,多聽一輪。今天不需要結論。",
+    work:"別逼結果,今天做的是維持關係、不是拿到答案。",
+    money:"等待期。不加碼也不撤退,守住現金部位。",
+    verb:"等待"},
+ 3:{k:"表達・創意・擴散",
+    one:"想法憋著沒有用,說出來、做出來,才會有回應回到你身上。",
+    love:"把那句一直沒說完的話講完。",
+    work:"對外發聲、發文、聯繫——今天要的是曝光,不是完美。",
+    money:"這階段的收入來自「你說了什麼」,而不是你做了多少工。",
+    verb:"表達"},
+ 4:{k:"穩固・秩序・務實",
+    one:"這個階段沒有捷徑,把地基做好就是唯一正解。",
+    love:"用具體的小事累積信任,不要靠承諾。",
+    work:"整理流程、補齊文件、把爛攤子收乾淨。無聊但關鍵。",
+    money:"建立制度性的儲蓄或記帳,不追短期報酬。",
+    verb:"扎根"},
+ 5:{k:"變動・自由・轉折",
+    one:"改變已經在路上了。抗拒不會讓它停,只會把痛拉長。",
+    love:"關係的形式需要調整,但那不等於要結束。",
+    work:"可以換方法、換路線,但先想清楚退路再動。",
+    money:"波動期。別在情緒最高或最低的那一刻做決定。",
+    verb:"轉向"},
+ 6:{k:"責任・家・照顧",
+    one:"注意力該從外面收回來,放回人和生活本身。",
+    love:"有人在等你回應,不是等你解決問題。",
+    work:"工作和家庭已經失衡了,今天先修這個,別再往外衝。",
+    money:"花在家用、健康、居住上的錢,這陣子值得花。",
+    verb:"回家"},
+ 7:{k:"內省・直覺・學習",
+    one:"你其實已經知道答案了,只是還不想承認。",
+    love:"先獨處一下,別在心亂的時候給出承諾。",
+    work:"停下來查資料、學東西,硬幹只會多繞一圈。",
+    money:"資訊不足就不要下注。今天適合研究,不適合出手。",
+    verb:"沉澱"},
+ 8:{k:"豐盛・因果・權力",
+    one:"收成會來,代價也會同時到。兩個都要接,才拿得住。",
+    love:"關係裡的權力不平衡,該講開了。",
+    work:"該爭取的價碼要開口,你手上的籌碼比你以為的多。",
+    money:"現金流會動。先把成本和稅算清楚,再開心。",
+    verb:"承接"},
+ 9:{k:"完成・放下・交棒",
+    one:"有一段該結束了。留著它,只是佔著位置。",
+    love:"放手不是失敗,是把空間騰出來給對的人事。",
+    work:"結案、交接、把尾巴收乾淨,別留半截。",
+    money:"處理掉閒置資產,停掉沒在用的訂閱和續約。",
+    verb:"收尾"}
+};
+
+/* 疊字(重複三次)專屬解讀 */
+const TRIPLE = {
+ "000":{t:"完全的歸零點",c:"三個 0 是最徹底的一次重來。舊的那套已經不管用了,現在不是修補的時候,是整組拆掉重排。空白會讓人不安,但空白才有位置放新東西。"},
+ "111":{t:"念頭正在成形",c:"你這陣子腦中反覆出現的那件事,正在往現實靠近。**現在特別要注意自己在想什麼**——因為想什麼,接下來就會長出什麼。這是起點,不是結果。"},
+ "222":{t:"種子已經埋下了",c:"你做的努力沒有白費,只是還沒到冒出土的時候。**現在的任務是不要挖開來看**。維持關係、維持節奏、維持信心,這三件就是全部。"},
+ "333":{t:"表達出來就有人接",c:"你有話想說、有東西想做,而現在正是說出來的時機。**不必先完美再開口**。這階段的回報幾乎都來自「被看見」,而不是「做得更多」。"},
+ "444":{t:"地基穩,不用怕",
+   c:"你不是一個人在扛,而且底下比你想的穩。**這階段做的都是不起眼的基礎工**——整理、記錄、修補、把事情做對。無聊,但之後所有東西都靠這段撐著。"},
+ "555":{t:"變動已經開始了",c:"改變不是「要不要」的問題,是「已經在發生」。**與其抗拒,不如決定方向**。混亂期通常比想像中短,但一定比想像中不舒服。"},
+ "666":{t:"把注意力收回來",c:"這不是壞數字,是提醒:你太往外了。**錢、成就、別人的看法佔掉太多腦袋**,而家裡、身體、真正在乎你的人被排到後面。今天調回來一點。"},
+ "777":{t:"你走在對的路上",c:"這是少數單純的肯定訊號——目前的方向是對的。**但接下來需要的是理解,不是加速**。停下來想清楚為什麼有效,才複製得起來。"},
+ "888":{t:"收成期,連同代價",c:"該來的會來,而且通常一次來一堆。**豐盛的另一面是責任變重**。現在的重點不是拿更多,是撐得住你拿到的東西。"},
+ "999":{t:"這一段結束了",c:"一個章節到底了。**放不下的通常不是那件事,是「我投入這麼久」的感覺**。認賠、結案、交接,然後空出手。下一段要用空的手才接得住。"}
+};
+
+/* 常見特殊組合(含 4 位) */
+const SPECIAL = {
+ "911":{t:"緊急轉換的訊號",c:"舊的結束(9)和新的開始(1)壓在同一個時間點。**通常伴隨一件你不想面對但躲不掉的事**。它不是懲罰,是逼你換軌。"},
+ "1111":{t:"念頭最容易成真的時刻",c:"四個 1 是天使數字裡最常被提到的一組。**它的意思很單純:你現在想的東西,放大好幾倍**。所以重點不是許願,是先確認你腦中跑的是希望還是恐懼。"},
+ "1212":{t:"跨出去,然後穩住",c:"1(開始)和 2(耐心)交替出現,是「踏一步、等一下」的節奏。**急著連跨兩步反而會摔**。走一步,確認,再走。"},
+ "1234":{t:"照順序推進",c:"最乾淨的一組推進訊號。事情正照著它該有的順序在走,**你要做的只有一件事:不要跳步**。想抄捷徑的那個念頭,就是這組數字要你留意的。"},
+ "2222":{t:"撐住,快到了",c:"你已經等很久了,而這組數字的意思是:**再撐一下,不是白等**。現在退場的成本比你以為的高很多。"}
+};
+
+/* 結構型態說明 */
+function structNote(s){
+  const a=+s[0],b=+s[1],c=+s[2],n=s.length;
+  const out=[];
+  if(n===3){
+    if(a===b&&b===c){
+      out.push(`三個 <b>${a}</b> 疊在一起,訊息強度拉到最滿——<b>${D[a].k.split("・")[0]}</b>這件事現在是唯一重點,其他都先放旁邊。`);
+    } else if(a===b){
+      out.push(`前兩位重複的 <b>${a}</b>,代表「${D[a].k.split("・")[0]}」是現在的主軸;結尾的 <b>${c}</b> 指出接下來要補的方向——<b>${D[c].verb}</b>。`);
+    } else if(b===c){
+      out.push(`開頭的 <b>${a}</b> 是起因,後面重複的 <b>${b}</b> 才是重點。<b>力量集中在後半段</b>,別在開頭就耗完力氣。`);
+    } else if(a===c){
+      out.push(`頭尾都是 <b>${a}</b>,中間夾著 <b>${b}</b>。你會繞一圈回到原點,<b>中間那段才是真正要處理的功課</b>。`);
+    } else if(b===a+1&&c===b+1){
+      out.push(`依序遞增,事情正照著順序推進。<b>不要跳步</b>,想抄捷徑就是這組數字提醒你留意的地方。`);
+    } else if(b===a-1&&c===b-1){
+      out.push(`依序遞減,這是在<b>收尾,不是在倒退</b>。一件件關掉,關到底就會有新的開始。`);
+    } else {
+      out.push(`三個不同的數字,代表三個階段:<span class="chain">${a} → ${b} → ${c}</span>,也就是<b>先${D[a].verb}、再${D[b].verb}、最後${D[c].verb}</b>。順序不要顛倒。`);
+    }
+    if(s.includes("0")){
+      out.push(`當中含有 <b>0</b>:它會放大旁邊數字的力道,同時也在說「這件事可以重來」。`);
+    }
+  } else {
+    const uniq=[...new Set(s.split(""))];
+    if(uniq.length===1) out.push(`${s.length} 個 <b>${s[0]}</b> 連續出現,是同一個訊息重複喊了 ${s.length} 次。<b>你一直沒接收到,所以它一直來</b>。`);
+    else if(s.length===4&&s[0]===s[2]&&s[1]===s[3]) out.push(`<b>${s[0]}${s[1]}</b> 重複兩輪,是一個「兩拍」的節奏:<b>${D[+s[0]].verb} → ${D[+s[1]].verb}</b>,然後再一次。急著連跨兩步反而會亂。`);
+    else out.push(`四位數依序展開:<span class="chain">${s.split("").join(" → ")}</span>,對應<b>${s.split("").map(x=>D[+x].verb).join("、")}</b>四個動作。`);
+  }
+  // 數字根
+  let sum=s.split("").reduce((p,x)=>p+ +x,0), raw=sum;
+  while(sum>9) sum=String(sum).split("").reduce((p,x)=>p+ +x,0);
+  out.push(`底層主題(數字根 ${raw} → <b>${sum}</b>):<b>${D[sum].k}</b>。這是整組數字背後真正在講的事。`);
+  return out.map(x=>`<p>${x}</p>`).join("");
+}
+
+/* 今日行動 —— 由尾數決定方向 */
+function todayAction(s){
+  const last=+s[s.length-1], first=+s[0];
+  if(first===last) return `今天只做一件事:<b>${D[last].verb}</b>。${D[last].one}`;
+  return `方向由尾數 <b>${last}</b> 決定:<b>${D[last].verb}</b>。${D[last].one}<br><br>但起手式是開頭的 <b>${first}</b>——先<b>${D[first].verb}</b>,再往那個方向走。`;
+}
+
+/* 組出標題與核心訊息 */
+function build(s){
+  const a=+s[0], last=+s[s.length-1];
+  let t,c;
+  if(SPECIAL[s]){ t=SPECIAL[s].t; c=SPECIAL[s].c; }
+  else if(TRIPLE[s]){ t=TRIPLE[s].t; c=TRIPLE[s].c; }
+  else {
+    const dom = domin(s);
+    t = `${D[dom].k.split("・")[0]}到${D[last].k.split("・")[0]}`;
+    c = `${D[dom].one}<br><br>而結尾的 <strong>${last}</strong> 指出去向:${D[last].one}`;
+  }
+  c = c.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+  const kw = [...new Set(s.split(""))].map(x=>D[+x].k.split("・")[0]).join(" · ");
+
+  const aspects = pickAspects(s);
+
+  return `
+  <div class="card">
+    <div class="bignum">${s}</div>
+    <div class="title">${t}</div>
+    <div class="kw">${kw}</div>
+    <div class="core">${c}</div>
+  </div>
+
+  <div class="card">
+    <div class="sec-h">三面向提示</div>
+    <ul class="act">
+      <li><span class="tag">感情</span><span class="tx">${aspects.love}</span></li>
+      <li><span class="tag">事業</span><span class="tx">${aspects.work}</span></li>
+      <li><span class="tag">金錢</span><span class="tx">${aspects.money}</span></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="sec-h">數字結構</div>
+    <div class="struct">${structNote(s)}</div>
+  </div>
+
+  <div class="card today">
+    <div class="sec-h">今天做這件</div>
+    <div class="tx">${todayAction(s)}</div>
+  </div>`;
+}
+
+/* 找主導數字:出現最多次者,平手取第一位 */
+function domin(s){
+  const cnt={};
+  for(const ch of s) cnt[ch]=(cnt[ch]||0)+1;
+  let best=s[0];
+  for(const ch of s) if(cnt[ch]>cnt[best]) best=ch;
+  return +best;
+}
+
+/* 三面向:主導數字給一個,尾數給一個,中間位補一個,避免重複 */
+function pickAspects(s){
+  const ds=s.split("").map(Number);
+  const dom=domin(s), last=ds[ds.length-1], mid=ds[Math.floor(ds.length/2)];
+  const pool=[dom,last,mid,...ds];
+  const seen=new Set(), pick=[];
+  for(const d of pool){ if(!seen.has(d)){seen.add(d);pick.push(d);} }
+  while(pick.length<3) pick.push(pick[pick.length-1]);
+  return { love:D[pick[0]].love, work:D[pick[1]].work, money:D[pick[2]].money };
+}
+
+/* ═══════════ 介面層 ═══════════ */
+
+let cur="";
+const valEl=document.getElementById("val");
+const resEl=document.getElementById("result");
+const histEl=document.getElementById("hist");
+let history=[];
+
+function draw(){
+  if(cur===""){ valEl.textContent="輸入數字"; valEl.classList.add("ph"); }
+  else { valEl.textContent=cur; valEl.classList.remove("ph"); }
+}
+
+function press(n){
+  if(cur.length>=4) return;
+  cur+=n; draw();
+  if(cur.length===3) show(cur);
+  else if(cur.length===4) show(cur);
+}
+
+function show(s){
+  if(s.length<3){ return; }
+  resEl.innerHTML=build(s);
+  history=[s,...history.filter(x=>x!==s)].slice(0,12);
+  drawHist();
+  setTimeout(()=>resEl.scrollIntoView({behavior:"smooth",block:"start"}),80);
+}
+
+function drawHist(){
+  histEl.innerHTML=history.map(x=>`<span class="chip" data-n="${x}">${x}</span>`).join("");
+}
+histEl.addEventListener("click",e=>{
+  const c=e.target.closest(".chip"); if(!c) return;
+  cur=c.dataset.n; draw(); show(cur);
+});
+
+/* 建鍵盤 */
+const pad=document.getElementById("pad");
+const keys=[1,2,3,4,5,6,7,8,9,"清除",0,"查詢"];
+pad.innerHTML=keys.map(k=>{
+  if(k==="清除") return `<button class="key fn" data-k="clear">清除</button>`;
+  if(k==="查詢") return `<button class="key go" data-k="go">查詢</button>`;
+  return `<button class="key" data-k="${k}">${k}</button>`;
+}).join("");
+pad.addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  const k=b.dataset.k;
+  if(k==="clear"){ cur=""; draw(); resEl.innerHTML=""; return; }
+  if(k==="go"){ if(cur.length===1||cur.length===2) cur=cur.padStart(3,"0"),draw(); if(cur.length>=3) show(cur); return; }
+  press(k);
+});
+
+document.getElementById("btnRand").addEventListener("click",()=>{
+  cur=String(Math.floor(Math.random()*1000)).padStart(3,"0");
+  draw(); show(cur);
+});
+document.getElementById("btnToday").addEventListener("click",()=>{
+  const d=new Date();
+  const s=String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0");
+  cur=s.replace(/^0/,"")||"0"; cur=cur.padStart(3,"0").slice(-4);
+  if(cur.length<3) cur=cur.padStart(3,"0");
+  draw(); show(cur);
+});
+
+/* 實體鍵盤(桌機用) */
+document.addEventListener("keydown",e=>{
+  if(/^[0-9]$/.test(e.key)) press(e.key);
+  else if(e.key==="Backspace"){ cur=cur.slice(0,-1); draw(); if(cur.length<3) resEl.innerHTML=""; }
+  else if(e.key==="Enter"&&cur.length>=3) show(cur);
+});
+
+draw();
+</script>
+</body>
+</html>
